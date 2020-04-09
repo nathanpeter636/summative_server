@@ -15,7 +15,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 // added to allow us to upload images to public folder
 app.use(fileUpload());
-app.use(express.static("public"));
+app.use("/assets", express.static("public"));
 // end init express
 
 // my functions
@@ -24,17 +24,18 @@ function updateAfterFileUpload(req, res, objFromDB, fileName) {
   var data = req.body;
   Object.assign(objFromDB, data);
 
-  objFromDB.profile_image = fileName;
+  // must match the model entry
+  objFromDB.Image = fileName;
 
   objFromDB.save().then(
-    response => {
+    (response) => {
       res.json({
-        result: true
+        result: true,
       });
     },
-    error => {
+    (error) => {
       res.json({
-        result: false
+        result: false,
       });
     }
   );
@@ -44,12 +45,12 @@ function updateAfterFileUpload(req, res, objFromDB, fileName) {
 // init database stuff
 mongoose.connect(myconn.atlas, {
   useNewUrlParser: true,
-  useUnifiedTopology: true
+  useUnifiedTopology: true,
 });
 
 const db = mongoose.connection;
 
-db.on("connected", e => {
+db.on("connected", (e) => {
   console.log("+++ Mongoose connected ");
 });
 
@@ -64,26 +65,33 @@ app.use("/api", router);
 // CRUD
 // CREATE listing
 router.post("/user-listing", (req, res) => {
-  var newListing = new UserListing();
+  var collectionModel = new UserListing();
 
-  var data = req.body;
-  console.log(">>> ", data);
-  Object.assign(newListing, data);
+  if (req.files) {
+    var files = Object.values(req.files);
+    var uploadedFileObject = files[0];
+    var uploadedFileName = uploadedFileObject.name;
+    var nowTime = Date.now();
+    var newFileName = `${nowTime}_${uploadedFileName}`;
+    console.log(req.body);
+    //console.log(req.files);
 
-  newListing.save().then(
-    result => {
-      return res.json(result);
-    },
-    () => {
-      return res.send("problem adding new listing");
-    }
-  );
+    uploadedFileObject.mv(`public/${newFileName}`).then(
+      (params) => {
+        updateAfterFileUpload(req, res, collectionModel, newFileName);
+      },
+      (params) => {
+        updateAfterFileUpload(req, res, collectionModel);
+      }
+    );
+  } else {
+    updateAfterFileUpload(req, res, collectionModel);
+  }
 });
 
 // READ all listings
 router.get("/user-listing", (req, res) => {
-  UserListing.find()
-  .then(data => {
+  UserListing.find().then((data) => {
     res.json(data);
   });
 });
@@ -106,7 +114,7 @@ router.get("/user-listing/:id", (req, res) => {
   UserListing.findOne({ _id: req.params.id })
     .populate("questions")
     .populate({ path: "questions", options: { sort: { updatedAt: -1 } } })
-    .then(data => {
+    .then((data) => {
       res.json([data]);
     });
 });

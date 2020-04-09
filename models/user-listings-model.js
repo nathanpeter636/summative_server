@@ -8,11 +8,12 @@ var UserListingsSchema = new Schema(
     Category: String,
     Phone: String,
     Description: String,
-    id: String
+    Image: String,
+    id: String,
   },
   {
     timestamps: true,
-    toJSON: { virtuals: true }
+    toJSON: { virtuals: true },
   }
 );
 
@@ -20,7 +21,7 @@ UserListingsSchema.virtual("comments", {
   ref: "Question",
   localField: "id",
   foreignField: "Name",
-  justOne: false
+  justOne: false,
 });
 
 // singular capitalized name for the mongo collection

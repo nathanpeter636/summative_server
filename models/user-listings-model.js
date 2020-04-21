@@ -20,7 +20,7 @@ var UserListingsSchema = new Schema(
 UserListingsSchema.virtual("comments", {
   ref: "Question",
   localField: "id",
-  foreignField: "question_id",
+  foreignField: "listing_id",
   justOne: false,
 });
 

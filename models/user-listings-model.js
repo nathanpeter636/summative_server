@@ -9,7 +9,7 @@ var UserListingsSchema = new Schema(
     Phone: String,
     Description: String,
     Image: String,
-    id: String,
+    id: { type: Number, default: Date.now() }
   },
   {
     timestamps: true,
@@ -20,7 +20,7 @@ var UserListingsSchema = new Schema(
 UserListingsSchema.virtual("comments", {
   ref: "Question",
   localField: "id",
-  foreignField: "Name",
+  foreignField: "question_id",
   justOne: false,
 });
 

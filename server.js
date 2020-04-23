@@ -24,8 +24,10 @@ function updateAfterFileUpload(req, res, objFromDB, fileName) {
   var data = req.body;
   Object.assign(objFromDB, data);
 
-  // must match the model entry
-  objFromDB.Image = fileName;
+    // must match the model entry
+    if (typeof fileName === "string") {
+      objFromDB.Image = fileName;
+    }
 
   objFromDB.save().then(
     (response) => {
@@ -67,6 +69,8 @@ app.use("/api", router);
 router.post("/user-listing", (req, res) => {
   var collectionModel = new UserListing();
 
+
+
   if (req.files) {
     var files = Object.values(req.files);
     var uploadedFileObject = files[0];
@@ -89,12 +93,53 @@ router.post("/user-listing", (req, res) => {
   }
 });
 
+
+
 // READ all listings
 router.get("/user-listing", (req, res) => {
   UserListing.find().then((data) => {
     res.json(data);
   });
 });
+
+// CREATING PUT
+    router.put("/user-listing/:id", (req, res) => {
+  UserListing.findOne({ _id: req.params.id }, function (err, objFromDB) {
+    if (err)
+      return res.json({
+        result: false,
+      });
+
+    if (req.files) {
+      var files = Object.values(req.files);
+      var uploadedFileObject = files[0];
+      var uploadedFileName = uploadedFileObject.name;
+      var nowTime = Date.now();
+      var newFileName = `${nowTime}_${uploadedFileName}`;
+
+      uploadedFileObject.mv(`public/${newFileName}`).then(
+        (params) => {
+          updateAfterFileUpload(req, res, objFromDB, newFileName);
+        },
+        (params) => {
+          updateAfterFileUpload(req, res, objFromDB);
+        }
+      );
+    } else {
+      updateAfterFileUpload(req, res, objFromDB);
+    }
+    /////////
+  });
+});
+
+
+// READ all questions
+router.get("/questions", (req, res) => {
+  Question.find().then((data) => {
+    res.json(data);
+  });
+});
+
 
 // DELETE A listing - Will probably never need this
 // send this endpoint the mongo _id and it ill delete the doc

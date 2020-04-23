@@ -9,7 +9,7 @@ var UserListingsSchema = new Schema(
     Phone: String,
     Description: String,
     Image: String,
-    id: { type: Number, default: Date.now() }
+    id: { type: Number, default: Date.now() },
   },
   {
     timestamps: true,

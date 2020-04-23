@@ -4,7 +4,8 @@ var Schema = mongoose.Schema;
 var questionsSchema = new Schema(
   {
     Name: String,
-    description: String
+    description: String,
+    listing_id: Number,
   },
   {
     timestamps: true
